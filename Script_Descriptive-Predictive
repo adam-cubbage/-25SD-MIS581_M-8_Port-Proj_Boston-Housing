@@ -1,0 +1,303 @@
+### === Begin Project Analysis Script === ###
+
+# Name: Adam Cubbage
+# Course: 25SD-MIS581
+# Module: 2 Descriptive Analysis
+import time
+print(time.ctime())
+
+### STEP 1: Prepare workstation
+### Discriptive Analysis ###
+# Confirm working directory
+import os # Import os module
+# print(os.getcwd()) # Print working directory
+
+### Discriptive Analysis ###
+# Import packages
+import pandas as pd # Pandas for data manipulation
+import numpy as np # Numpy for numerical computations and arrays
+import seaborn as sns # Seaborn for data visualization
+import matplotlib.pyplot as plt # Matplotlib for data visualization
+
+# STEP 2: Explore dataset
+### Discriptive Analysis ###
+# Read in Housing dataset as df
+df = pd.read_csv("HousingData.csv")
+# print(df.columns) # Display column names
+# print(df.head()) # Display top of df
+# df.info() # Display data info (Note: Missing values present)
+
+### STEP 3: Clean data
+### Discriptive Analysis ###
+# Create subset with reduced variables
+df_subset = df[['CRIM', 'LSTAT', 'PTRATIO', 'MEDV']]
+# Create subset df with removed rows containing missing values
+df_subset_clean = df_subset.dropna()
+# Create data dictionary for df_subset_clean
+df_subset_clean_dictionary = pd.DataFrame({
+    'Variable': df_subset_clean.columns,
+    'Data Type': df_subset_clean.dtypes.astype(str),
+    'Missing Values': df_subset_clean.isnull().sum(),
+    'Count': df_subset_clean.notnull().sum()
+})
+df_subset_clean_dictionary  # Display the cleaned data dictionary
+
+### STEP 3b: Explore descriptive statistics of clean subset
+### Discriptive Analysis ###
+print(df_subset_clean.head())  # Display top of df_subset_clean
+# Enhance summary statistics table
+from scipy.stats import skew, kurtosis  # scipy.stats for skew/kurtosis
+# Create default summary statistics
+summary_stats = df_subset_clean.describe().T
+# Add skewness/kurtosis columns
+summary_stats['skewness'] = df_subset_clean.skew()
+summary_stats['kurtosis'] = df_subset_clean.kurt()
+summary_stats # Display the enhanced summary
+
+### STEP 4a: Visualize clean data
+### Discriptive Analysis ###
+# Visualize MEDV distribution with histogram
+sns.histplot(df_subset_clean['MEDV'], bins=30, kde=True)
+plt.title("Median Home Value Distribution (MEDV)")
+plt.xlabel("MEDV")
+plt.ylabel("Frequency")
+plt.show()  # Display histogram
+
+### STEP 4b: Visualize clean data
+### Discriptive Analysis ###
+# Visualize LSTAT distribution with histogram
+sns.histplot(df_subset_clean['LSTAT'], bins=30, kde=True)
+plt.title("Lower Status Population % Distribution (LSTAT)")
+plt.xlabel("LSTAT")
+plt.ylabel("Frequency")
+plt.show()  # Display histogram
+
+### STEP 4c: Visualize clean data
+### Discriptive Analysis ###
+# Visualize PTRATIO distribution with histogram
+sns.histplot(df_subset_clean['PTRATIO'], bins=30, kde=True)
+plt.title("Pupil-Teacher Ratio Distribution (PTRATIO)")
+plt.xlabel("PTRATIO")
+plt.ylabel("Frequency")
+plt.show()  # Display histogram
+
+### STEP 4d: Visualize clean data
+### Discriptive Analysis ###
+# Visualize CRIM distribution with histogram (Before Log)
+#sns.histplot(df_subset_clean['CRIM'], bins=30, kde=True)
+#plt.title("Crime Rate Distribution (CRIM)")
+#plt.xlabel("CRIM (Before Log)")
+#plt.ylabel("Frequency")
+#plt.show()  # Display histogram (Before Log)
+
+### STEP 4d-II: Visualize clean data
+### Discriptive Analysis ###
+# Apply log transformation to LOG_CRIM
+df_subset_clean.loc[:, 'LOG_CRIM'] = np.log1p(df_subset_clean['CRIM'])
+
+# Visualize LOG_CRIM distribution with histogram
+sns.histplot(df_subset_clean['LOG_CRIM'], bins=30, kde=True)
+plt.title("Crime Rate Distribution (LOG_CRIM)")
+plt.xlabel("LOG_CRIM")
+plt.ylabel("Frequency")
+plt.show()  # Display histogram
+
+# Name: Adam Cubbage
+# Course: 25SD-MIS581
+# Module: 6 Predictive Analysis
+import time
+print(time.ctime())
+
+### STEP 5: Prepare workstation
+### Predictive Analysis ### RQ-1 ###
+# Import packages
+import statsmodels.api as sm # statsmodels for regression
+import statsmodels.formula.api as smf # formula-based model
+import scipy.stats as stats # scipy.stats to test hypothesis
+import matplotlib.pyplot as plt # Matplotlib for data visualization
+
+### STEP 6: Create subset copy for regression model
+### Predictive Analysis ### RQ-1 ###
+df_model = df_subset_clean.copy() # Copy clean/transformed df subset
+# print(df_model.head()) # Display the top of subset copy
+
+import time # Time stamp
+print(time.ctime())
+
+### STEP 6b: Build multiple linear regression model with MEDV = β0 + β1(LOG_CRIM) + β2(PTRATIO) + β3(LSTAT) + ε
+### Predictive Analysis ### RQ-1 ###
+formula = "MEDV ~ LOG_CRIM + PTRATIO + LSTAT" # Create formula for multiple linear regression
+q1_mlr = smf.ols(formula=formula, data=df_model).fit() # Fit q1_mlr using ordinary least squares
+q1_mlr.summary() # Display summary
+
+### STEP 6c: Visualize model with Residual Plots
+### Predictive Analysis ### RQ-1 ###
+# Create residuals and fitted values
+df_model['residuals'] = q1_mlr.resid # Save residuals from the model
+df_model['fitted'] = q1_mlr.fittedvalues # Save fitted (predicted) values
+
+# Residual Plot: Residuals vs Fitted Values
+plt.figure(figsize=(8, 5))
+sns.residplot(x='fitted', y='residuals', data=df_model, lowess=True, line_kws={'color': 'red'})
+plt.title("Residuals vs Fitted Values")
+plt.xlabel("Fitted Values")
+plt.ylabel("Residuals")
+plt.axhline(0, color='gray', linestyle='--')
+plt.show() # Display residuals vs fitted plot
+
+import time # Time stamp
+print(time.ctime())
+
+### STEP 6d: Visualize model with Coefficient Plot
+### Predictive Analysis ### RQ-1 ###
+coef_df = pd.DataFrame({
+    'Variable': q1_mlr.params.index,
+    'Coefficient': q1_mlr.params.values,
+    'Lower CI': q1_mlr.conf_int()[0],
+    'Upper CI': q1_mlr.conf_int()[1]
+})
+coef_df = coef_df[coef_df['Variable'] != 'Intercept'] # Remove the intercept
+
+plt.figure(figsize=(8, 5))
+sns.pointplot(data=coef_df, y='Variable', x='Coefficient', join=False, color='blue')
+for i in range(len(coef_df)):
+    plt.plot([coef_df['Lower CI'].iloc[i], coef_df['Upper CI'].iloc[i]], [i, i], color='black')
+plt.axvline(0, color='gray', linestyle='--')
+plt.title("Regression Coefficients with 95% Confidence Intervals")
+plt.xlabel("Coefficient Estimate")
+plt.ylabel("Predictor Variable")
+plt.tight_layout()
+plt.show() # Display coefficient plot
+
+import time # Time stamp
+print(time.ctime())
+
+### STEP 6e: Visualize model with Q-Q Plot to check normality of Residuals
+### Predictive Analysis ### RQ-1 ###
+# Q-Q Plot: Normality Check of Residuals
+sm.qqplot(df_model['residuals'], line='45', fit=True)
+plt.title('Q-Q Plot of Regression Residuals')
+plt.show() # Display Q-Q Plot
+
+import time # Time stamp
+print(time.ctime())
+
+### STEP 6: Prepare workstation
+### Predictive Analysis ### RQ-2 ###
+# Import required packages
+import pandas as pd # Pandas for data manipulation
+import matplotlib.pyplot as plt # Matplotlib for data visualization
+import seaborn as sns # Seaborn for data visualization
+import statsmodels.api as sm # Statsmodels for statistical model
+import statsmodels.formula.api as smf # Formula based ANOVA
+import scipy.stats as stats # Scipy.stats to test hypothesis
+
+import time # Time stamp
+print(time.ctime())
+
+# STEP 7: Create subset copy for ANOVA
+### Predictive Analysis ### RQ-2 ###
+# Group PTRATIO variable into school quality tiers: Low, Medium, and High
+df_anova = df_subset_clean.copy()
+df_anova['PTRATIO_Tier'] = pd.qcut(df_anova['PTRATIO'], q=3, labels=['Low', 'Medium', 'High'])
+# print(df_anova['PTRATIO_Tier'].value_counts())  # Check sample sizes per group
+# PTRATIO_Tier
+# Medium    253
+# Low       158
+# High       55
+# Note: Uneven group sizes
+
+# Perform Levene's Test to test for homogeneity of variances
+low = df_anova[df_anova['PTRATIO_Tier'] == 'Low']['MEDV']
+medium = df_anova[df_anova['PTRATIO_Tier'] == 'Medium']['MEDV']
+high = df_anova[df_anova['PTRATIO_Tier'] == 'High']['MEDV']
+levene_test = stats.levene(low, medium, high)
+print("Levene's Test:", levene_test) # Display Levene's test results
+# Note: Unequal variance so will use Welch’s ANOVA instead
+
+import time # Time stamp
+print(time.ctime())
+
+# STEP 7b: Perform Welch’s ANOVA to test differences in MEDV across PTRATIO tiers
+### Predictive Analysis ### RQ-2 ###
+model = smf.ols('MEDV ~ PTRATIO_Tier', data=df_anova).fit()# Approximate Welch’s ANOVA
+anova_table = sm.stats.anova_lm(model, typ=2, robust='hc3')  # Adjust for unequal variance
+print("Welch’s ANOVA Results (robust SE):")
+print(anova_table) # Display Welch's ANOVA results
+
+import time # Time stamp
+print(time.ctime())
+
+# STEP 7c: Visualize Least Squares Means (LS-Means) Plot
+### Predictive Analysis ### RQ-2 ###
+plt.figure(figsize=(8, 5))
+sns.pointplot(x='PTRATIO_Tier', y='MEDV', data=df_anova,
+              capsize=0.1, errorbar=('ci', 95), color='blue')
+plt.title("LS-Means Plot: MEDV by PTRATIO Tier")
+plt.xlabel("PTRATIO Tier")
+plt.ylabel("Mean MEDV")
+plt.tight_layout()
+plt.show() # Display LS-Means Plot
+
+import time # Time stamp
+print(time.ctime())
+
+# STEP 7d: Visualize Least Squares Means (LS-Means) Plot
+### Predictive Analysis ### RQ-2 ###
+from statsmodels.stats.multicomp import MultiComparison  # MultiComparison for Tukey HSD post-hoc pairwise comparisons 
+mc = MultiComparison(df_anova['MEDV'], df_anova['PTRATIO_Tier'])
+result = mc.tukeyhsd()
+result.plot_simultaneous(figsize=(8, 5))
+plt.title("Pairwise Mean Differences in MEDV by PTRATIO Tier")
+plt.xlabel("Mean Difference with 95% CI")
+plt.grid(True, linestyle='--', alpha=0.5)
+plt.tight_layout()
+plt.show() # Display Pairwise Comparisons Plot 
+
+import time # Time stamp
+print(time.ctime())
+
+### STEP 8: Perform Spearman Rank Correlation test
+### Predictive Analysis ### RQ-3 ###
+# Create subset for correlation analysis using MEDV and LOG_CRIM
+df_corr = df_subset_clean[['MEDV', 'LOG_CRIM']].copy()
+# Compute Spearman Rank Correlation
+spearman_corr, p_value = stats.spearmanr(df_corr['MEDV'], df_corr['LOG_CRIM'])
+print("Spearman Rank Correlation Results:")
+print("Spearman's rho:", spearman_corr)
+print("p-value:", p_value) # Display Spearman Rank Correlation results
+
+import time # Time stamp
+print(time.ctime())
+
+### STEP 8a: Visualize with Boxplot (LOG_CRIM Tiers)
+### Predictive Analysis ### RQ-3 ###
+# Bin LOG_CRIM into 3 tiers
+df_corr['LOG_CRIM_Tier'] = pd.qcut(df_corr['LOG_CRIM'], q=3, labels=['Low', 'Medium', 'High'])
+
+plt.figure(figsize=(8, 5))
+sns.boxplot(x='LOG_CRIM_Tier', y='MEDV', data=df_corr)
+plt.title("Boxplot of MEDV by LOG_CRIM Tier")
+plt.xlabel("Crime Rate Tier (LOG_CRIM)")
+plt.ylabel("Median Home Value (MEDV)")
+plt.tight_layout()
+plt.show() # Display Boxplot
+
+import time # Time stamp
+print(time.ctime())
+
+### STEP 8a: Visualize with Bar Chart of Mean MEDV by LOG_CRIM Tier
+### Predictive Analysis ### RQ-3 ###
+plt.figure(figsize=(8, 5))
+df_grouped = df_corr.groupby('LOG_CRIM_Tier')['MEDV'].mean().reset_index()
+sns.barplot(x='LOG_CRIM_Tier', y='MEDV', data=df_grouped, palette="Blues_d")
+plt.title("Mean MEDV by LOG_CRIM Tier")
+plt.xlabel("Crime Rate Tier (LOG_CRIM)")
+plt.ylabel("Mean Median Home Value (MEDV)")
+plt.tight_layout()
+plt.show() # Display Bar Chart
+
+import time # Time stamp
+print(time.ctime())
+
+### === End Project Analysis Script === ###
