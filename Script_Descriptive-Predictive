@@ -1,3 +1,18 @@
+---------------------------------------------------
+---------------------------------------------------
+## NOTE: Post-Analysis Limitation – Censored MEDV Values
+
+The `MEDV` variable is right-censored at $50,000, meaning true values above this threshold were capped. The OLS-based Multiple Linear Regression model used here does not account for this, so:
+
+- Predictor effects on high-value homes may be underestimated.
+- Predictions near $50K may be biased or less reliable.
+- Residuals and model fit may be distorted.
+- Future models should consider censored approaches (e.g., Tobit, quantile regression).
+  
+This study focuses on lower-income neighborhoods, which fall below the $50K cap. Thus, the model remains appropriate for the population most impacted by housing policy, and the limitation does not affect core findings.
+---------------------------------------------------
+---------------------------------------------------
+
 ### === Begin Project Analysis Script === ###
 
 # Name: Adam Cubbage
