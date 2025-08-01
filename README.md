@@ -1,13 +1,17 @@
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+## NOTE: Post-Analysis Limitation – Censored MEDV Values
 
-## NOTE: Post-Analysis Limitation – Censored MEDV Values ##
-
-The `MEDV` variable appears to be right-censored at $50,000, meaning true values above this threshold were capped. Since the Multiple Linear Regression model used Ordinary Least Squares (OLS), which does not account for censoring, the following limitations apply:
+The `MEDV` variable is right-censored at $50,000, meaning true values above this threshold were capped. The OLS-based Multiple Linear Regression model used here does not account for this, so:
 
 - Predictor effects on high-value homes may be underestimated.
-- Predictions near $50,000 may be biased or unreliable.
-- The ceiling distorts residuals and affects model interpretation.
-- Future models should consider censored methods (e.g., Tobit or quantile regression) for better upper-tail accuracy.
-
+- Predictions near $50K may be biased or less reliable.
+- Residuals and model fit may be distorted.
+- Future models should consider censored approaches (e.g., Tobit, quantile regression).
+  
+This study focuses on lower-income neighborhoods, which fall below the $50K cap. Thus, the model remains appropriate for the population most impacted by housing policy, and the limitation does not affect core findings.
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 # 25SD-MIS581_M-8_Port-Proj_Boston-Housing
 # 
