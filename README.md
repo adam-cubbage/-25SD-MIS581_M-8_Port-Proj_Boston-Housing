@@ -1,3 +1,14 @@
+
+## NOTE: Post-Analysis Limitation – Censored MEDV Values ##
+
+The `MEDV` variable appears to be right-censored at $50,000, meaning true values above this threshold were capped. Since the Multiple Linear Regression model used Ordinary Least Squares (OLS), which does not account for censoring, the following limitations apply:
+
+- Predictor effects on high-value homes may be underestimated.
+- Predictions near $50,000 may be biased or unreliable.
+- The ceiling distorts residuals and affects model interpretation.
+- Future models should consider censored methods (e.g., Tobit or quantile regression) for better upper-tail accuracy.
+
+
 # 25SD-MIS581_M-8_Port-Proj_Boston-Housing
 # 
 
