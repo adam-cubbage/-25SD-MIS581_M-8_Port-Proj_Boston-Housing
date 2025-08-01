@@ -1,16 +1,14 @@
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-## NOTE: Post-Analysis Limitation – Censored MEDV Values
+### NOTE: Post-Analysis Limitation – Censored MEDV Values
 
 The MEDV variable is right-censored at $50,000, meaning any true housing values above this threshold were recorded as 50. As a result, the Ordinary Least Squares (OLS)-based Multiple Linear Regression used in this analysis does not fully account for censoring, which introduces several limitations:
 
 * Predictor effects on high-value homes may be underestimated, especially for features that typically increase home prices.
-
 * Predictions near the $50K ceiling may be biased or exhibit compressed residuals, distorting model diagnostics such as R² and error terms.
-
 * Group comparisons in ANOVA may also reflect truncated means, impacting significance tests if upper-bound values cluster.
 
-    However, this project intentionally focuses on lower-income neighborhoods, which predominantly fall below the $50K threshold. The primary policy relevance lies in understanding crime, education, and poverty impacts on affordable and mid-range housing, not luxury homes.
+However, this project intentionally focuses on lower-income neighborhoods, which predominantly fall below the $50K threshold. The primary policy relevance lies in understanding crime, education, and poverty impacts on affordable and mid-range housing, not luxury homes.
 
 While this limitation may reduce generalizability to high-end properties, it does not compromise the validity of core findings for the target population. For future studies or full-spectrum valuation, methods such as Tobit regression, quantile regression, or survival analysis techniques for censored data are recommended.
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
